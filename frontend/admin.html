@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tableau de bord - HotelBook</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="/css/style.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+  <div class="container-fluid py-4">
+    <div id="alert-container"></div>
+    <h2 class="fw-bold mb-4"><i class="bi bi-speedometer2 me-2 text-primary"></i>Tableau de bord</h2>
+
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+      <div class="col-sm-2">
+        <div class="border rounded p-3 text-center">
+          <div class="text-muted small">Total</div>
+          <div class="fs-4 fw-bold" id="stat-total">-</div>
+        </div>
+      </div>
+      <div class="col-sm-2">
+        <div class="border rounded p-3 text-center">
+          <div class="text-muted small">En attente</div>
+          <div class="fs-4 fw-bold text-warning" id="stat-pending">-</div>
+        </div>
+      </div>
+      <div class="col-sm-2">
+        <div class="border rounded p-3 text-center">
+          <div class="text-muted small">Acceptées</div>
+          <div class="fs-4 fw-bold text-success" id="stat-confirmed">-</div>
+        </div>
+      </div>
+      <div class="col-sm-2">
+        <div class="border rounded p-3 text-center">
+          <div class="text-muted small">Annulées</div>
+          <div class="fs-4 fw-bold text-danger" id="stat-cancelled">-</div>
+        </div>
+      </div>
+      <div class="col-sm-2">
+        <div class="border rounded p-3 text-center">
+          <div class="text-muted small">Refusées</div>
+          <div class="fs-4 fw-bold text-secondary" id="stat-refused">-</div>
+        </div>
+      </div>
+      <div class="col-sm-2">
+        <div class="border rounded p-3 text-center">
+          <div class="text-muted small">Chiffre d'affaires</div>
+          <div class="fs-4 fw-bold" id="stat-revenue">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Onglets -->
+    <ul class="nav nav-tabs mb-3" id="admin-tabs">
+      <li class="nav-item"><button class="nav-link active" data-tab="bookings">Toutes les réservations</button></li>
+      <li class="nav-item"><button class="nav-link" data-tab="hotels">Hôtels</button></li>
+      <li class="nav-item"><button class="nav-link" data-tab="users">Utilisateurs</button></li>
+    </ul>
+
+    <div id="tab-bookings" class="tab-panel">
+      <div class="card shadow-sm">
+        <div class="table-responsive">
+          <table class="table table-sm table-hover mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th>#</th>
+                <th>Utilisateur</th>
+                <th>Hôtel / Chambre</th>
+                <th>Dates</th>
+                <th>Total</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-bookings-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-hotels" class="tab-panel d-none">
+      <div class="d-flex justify-content-between mb-3">
+        <h5 class="fw-bold">Hôtels</h5>
+        <button class="btn btn-sm btn-primary" onclick="openHotelModal()">
+          <i class="bi bi-plus-lg me-1"></i>Ajouter un hôtel
+        </button>
+      </div>
+      <div class="row g-3" id="admin-hotels-container"></div>
+    </div>
+
+    <div id="tab-users" class="tab-panel d-none">
+      <div class="card shadow-sm">
+        <div class="table-responsive">
+          <table class="table table-sm table-hover mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th>#</th>
+                <th>Utilisateur</th>
+                <th>E-mail</th>
+                <th>Rôle</th>
+                <th>Inscrit le</th>
+              </tr>
+            </thead>
+            <tbody id="admin-users-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Hôtel (Ajouter / Modifier) — unified -->
+  <div class="modal fade" id="hotel-modal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-dark text-white">
+          <h5 class="modal-title" id="hotel-modal-title"></h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="hotel-form-alert"></div>
+          <input type="hidden" id="hotel-form-id">
+          <form id="hotel-form">
+            <div class="mb-2"><label class="form-label">Nom *</label><input name="name" id="hf-name"
+                class="form-control" required></div>
+            <div class="row g-2 mb-2">
+              <div class="col"><label class="form-label">Ville *</label><input name="city" id="hf-city"
+                  class="form-control" required></div>
+              <div class="col"><label class="form-label">Pays *</label><input name="country" id="hf-country"
+                  class="form-control" required></div>
+            </div>
+            <div class="mb-2"><label class="form-label">Adresse</label><input name="address" id="hf-address"
+                class="form-control"></div>
+            <div class="mb-2">
+              <label class="form-label">Étoiles</label>
+              <select name="stars" id="hf-stars" class="form-select">
+                <option value="5">★★★★★</option>
+                <option value="4">★★★★</option>
+                <option value="3">★★★</option>
+                <option value="2">★★</option>
+                <option value="1">★</option>
+              </select>
+            </div>
+            <div class="mb-2"><label class="form-label">URL de l'image</label><input name="image_url" id="hf-image"
+                type="url" class="form-control"></div>
+            <div class="mb-3"><label class="form-label">Description</label><textarea name="description"
+                id="hf-description" class="form-control" rows="2"></textarea></div>
+            <button type="submit" id="hotel-form-btn" class="btn btn-primary w-100">
+              <i class="bi bi-save me-1"></i>Enregistrer
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Gérer les chambres -->
+  <div class="modal fade" id="manage-rooms-modal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header bg-dark text-white">
+          <h5 class="modal-title"><i class="bi bi-door-open me-2"></i>Chambres — <span id="rooms-hotel-name"></span>
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="rooms-hotel-id">
+          <div id="rooms-alert"></div>
+
+          <!-- Formulaire unifié chambre (ajouter / modifier) -->
+          <div class="card mb-3 border-primary" id="room-form-card">
+            <div class="card-header fw-semibold d-flex align-items-center justify-content-between"
+              id="room-form-header">
+              <span><i class="bi bi-plus-circle me-1"></i><span id="room-form-mode-label">Ajouter une
+                  chambre</span></span>
+              <button type="button" class="btn btn-sm btn-outline-secondary d-none" id="room-form-cancel"
+                onclick="resetRoomForm()">Annuler</button>
+            </div>
+            <div class="card-body">
+              <input type="hidden" id="room-form-id">
+              <form id="room-form">
+                <div class="row g-2">
+                  <div class="col-sm-3">
+                    <label class="form-label small fw-semibold">N° Chambre *</label>
+                    <input name="number" id="rf-number" class="form-control form-control-sm" placeholder="ex. 101"
+                      required>
+                  </div>
+                  <div class="col-sm-3">
+                    <label class="form-label small fw-semibold">Type *</label>
+                    <select name="room_type" id="rf-type" class="form-select form-select-sm" required>
+                      <option value="single">Single</option>
+                      <option value="double" selected>Double</option>
+                      <option value="twin">Twin</option>
+                      <option value="suite">Suite</option>
+                      <option value="deluxe">Deluxe</option>
+                      <option value="family">Familiale</option>
+                    </select>
+                  </div>
+                  <div class="col-sm-3">
+                    <label class="form-label small fw-semibold">Prix / Nuit *</label>
+                    <div class="input-group input-group-sm">
+                      <span class="input-group-text">€</span>
+                      <input name="price_per_night" id="rf-price" type="number" min="1" step="0.01" class="form-control"
+                        placeholder="99.00" required>
+                    </div>
+                  </div>
+                  <div class="col-sm-3">
+                    <label class="form-label small fw-semibold">Capacité *</label>
+                    <input name="capacity" id="rf-capacity" type="number" min="1" max="20"
+                      class="form-control form-control-sm" placeholder="2" required>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label small fw-semibold">Description</label>
+                    <input name="description" id="rf-description" class="form-control form-control-sm"
+                      placeholder="Description optionnelle">
+                  </div>
+                  <div class="col-12 d-flex align-items-center gap-3">
+                    <div class="form-check">
+                      <input type="checkbox" class="form-check-input" id="rf-available" checked>
+                      <label class="form-check-label small" for="rf-available">Disponible</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm ms-auto" id="room-form-btn">
+                      <i class="bi bi-plus-lg me-1"></i>Ajouter
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <h6 class="fw-semibold mb-2">Chambres existantes</h6>
+          <div id="rooms-list">
+            <div class="text-center py-3">
+              <div class="spinner-border spinner-border-sm text-primary"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/config.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+
+</html>

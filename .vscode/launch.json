@@ -1,0 +1,50 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Auth Service",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/auth-service/manage.py",
+      "args": ["runserver", "8001"],
+      "cwd": "${workspaceFolder}/auth-service",
+      "envFile": "${workspaceFolder}/auth-service/.env",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Hotel Service",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/hotel-service/manage.py",
+      "args": ["runserver", "8002"],
+      "cwd": "${workspaceFolder}/hotel-service",
+      "envFile": "${workspaceFolder}/hotel-service/.env",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Booking Service",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/booking-service/manage.py",
+      "args": ["runserver", "8003"],
+      "cwd": "${workspaceFolder}/booking-service",
+      "envFile": "${workspaceFolder}/booking-service/.env",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Notification Worker",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/notification-worker/worker.py",
+      "cwd": "${workspaceFolder}/notification-worker",
+      "envFile": "${workspaceFolder}/notification-worker/.env",
+      "console": "integratedTerminal"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "All Services",
+      "configurations": ["Auth Service", "Hotel Service", "Booking Service"]
+    }
+  ]
+}

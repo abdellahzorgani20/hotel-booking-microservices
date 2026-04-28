@@ -1,0 +1,179 @@
+services:
+  postgres-auth:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgresadmin123
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_auth_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  postgres-hotel:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: hotel_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgresadmin123
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_hotel_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  postgres-booking:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: booking_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgresadmin123
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_booking_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  traefik:
+      image: traefik:v2.11
+      ports:
+        - "80:80"
+        - "8080:8080"
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+        - ./traefik.yml:/etc/traefik/traefik.yml:ro
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_ERLANG_COOKIE: "hotel-booking-secret-cookie"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  consul:
+    image: hashicorp/consul:1.15
+    ports:
+      - "8500:8500"
+    command: agent -dev -ui -client=0.0.0.0 -log-level=warn
+
+  auth-service:
+    build: ./auth-service
+    env_file: ./auth-service/.env
+    environment:
+      DB_HOST: postgres-auth
+      DB_PORT: "5432"
+      CONSUL_HOST: consul
+      CONSUL_PORT: "8500"
+      PORT: "8001"
+    depends_on:
+      postgres-auth:
+        condition: service_healthy
+    volumes:
+      - ./auth-service:/app
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth.rule=PathPrefix(`/api/auth`)"
+      - "traefik.http.routers.auth.entrypoints=web"
+      - "traefik.http.services.auth.loadbalancer.server.port=8001"
+
+  hotel-service:
+    build: ./hotel-service
+    env_file: ./hotel-service/.env
+    environment:
+      DB_HOST: postgres-hotel
+      DB_PORT: "5432"
+      CONSUL_HOST: consul
+      CONSUL_PORT: "8500"
+      PORT: "8002"
+    depends_on:
+      postgres-hotel:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+    volumes:
+      - ./hotel-service:/app
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hotel.rule=PathPrefix(`/api/hotels`)"
+      - "traefik.http.routers.hotel.entrypoints=web"
+      - "traefik.http.services.hotel.loadbalancer.server.port=8002"
+
+  booking-service:
+    build: ./booking-service
+    env_file: ./booking-service/.env
+    environment:
+      DB_HOST: postgres-booking
+      DB_PORT: "5432"
+      CONSUL_HOST: consul
+      CONSUL_PORT: "8500"
+      PORT: "8003"
+    depends_on:
+      postgres-booking:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      hotel-service:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - ./booking-service:/app
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.booking.rule=PathPrefix(`/api/bookings`)"
+      - "traefik.http.routers.booking.entrypoints=web"
+      - "traefik.http.services.booking.loadbalancer.server.port=8003"
+
+  notification-worker:
+    build: ./notification-worker
+    env_file: ./notification-worker/.env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - ./notification-worker:/app
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - auth-service
+      - hotel-service
+      - booking-service
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+      - "traefik.http.routers.frontend.priority=1"
+
+volumes:
+  postgres_auth_data:
+  postgres_hotel_data:
+  postgres_booking_data:
+  rabbitmq_data:

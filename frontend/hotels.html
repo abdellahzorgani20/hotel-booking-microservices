@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hôtels - HotelBook</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="/css/style.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+  <div class="container py-4">
+    <div id="alert-container"></div>
+    <div class="row g-3 mb-4 align-items-end">
+      <div class="col-md-5">
+        <label class="form-label small text-muted">Recherche</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input type="text" id="search-input" class="form-control" placeholder="Nom d'hôtel, ville, pays...">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small text-muted">Ville</label>
+        <select id="filter-city" class="form-select">
+          <option value="">Toutes les villes</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small text-muted">Étoiles</label>
+        <select id="filter-stars" class="form-select">
+          <option value="">Toutes</option>
+          <option value="5">★★★★★</option>
+          <option value="4">★★★★</option>
+          <option value="3">★★★</option>
+          <option value="2">★★</option>
+          <option value="1">★</option>
+        </select>
+      </div>
+      <div class="col-md-2 text-end">
+        <button class="btn btn-outline-secondary" onclick="loadHotels()">
+          <i class="bi bi-arrow-clockwise me-1"></i>Réinitialiser
+        </button>
+      </div>
+    </div>
+    <div class="row" id="hotels-container"></div>
+    <div id="pagination"></div>
+  </div>
+
+  <!-- Modal Détail Hôtel -->
+  <div class="modal fade" id="hotel-modal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header bg-dark text-white">
+          <h5 class="modal-title" id="modal-hotel-name"></h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="modal-hotel-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Réservation -->
+  <div class="modal fade" id="booking-modal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title"><i class="bi bi-calendar-plus me-2"></i>Réserver une chambre</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted mb-3" id="book-room-info"></p>
+          <div id="booking-alert"></div>
+          <form id="booking-form">
+            <input type="hidden" id="book-hotel-id">
+            <input type="hidden" id="book-room-id">
+            <input type="hidden" id="book-price">
+            <div class="row g-3">
+              <div class="col-6">
+                <label class="form-label fw-semibold">Arrivée</label>
+                <input type="date" id="book-checkin" class="form-control" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-semibold">Départ</label>
+                <input type="date" id="book-checkout" class="form-control" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-semibold">Voyageurs</label>
+                <input type="number" id="book-guests" class="form-control" value="1" min="1" max="10">
+              </div>
+            </div>
+            <button type="submit" class="btn btn-success w-100 mt-3 fw-semibold">
+              <i class="bi bi-send me-1"></i>Envoyer la demande
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/config.js"></script>
+  <script src="/js/hotels.js"></script>
+</body>
+
+</html>

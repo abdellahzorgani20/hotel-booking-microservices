@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Accueil - HotelBook</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="/css/style.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+  <section class="hero-section text-white text-center">
+    <div class="container py-5">
+      <h1 class="display-3 fw-bold mb-3" style="text-shadow:0 2px 16px rgba(0,0,0,.5)">
+        Trouvez votre séjour idéal
+      </h1>
+      <p class="lead mb-5 opacity-90" style="font-size:1.25rem">
+        Explorez nos hôtels sélectionnés et réservez instantanément.
+      </p>
+      <div class="row justify-content-center mb-4">
+        <div class="col-md-6">
+          <div class="input-group input-group-lg shadow-lg">
+            <input type="text" id="hero-search" class="form-control border-0"
+              placeholder="Rechercher une ville ou un hôtel...">
+            <button class="btn btn-warning fw-bold px-4"
+              onclick="window.location.href='/hotels.html?search='+document.getElementById('hero-search').value">
+              <i class="bi bi-search me-2"></i>Rechercher
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="d-flex justify-content-center gap-3 flex-wrap">
+        <a href="/hotels.html" class="btn btn-light btn-lg fw-semibold">
+          <i class="bi bi-building me-2"></i>Parcourir les hôtels
+        </a>
+        <a href="/login.html" class="btn btn-outline-light btn-lg" id="cta-login">
+          <i class="bi bi-person-circle me-2"></i>Connexion / Inscription
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/config.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      updateNav();
+      const cta = document.getElementById('cta-login');
+      if (isLoggedIn() && cta) {
+        cta.innerHTML = '<i class="bi bi-calendar-check me-2"></i>Mes Réservations';
+        cta.href = '/bookings.html';
+      }
+      const search = new URLSearchParams(location.search).get('search');
+      if (search) window.location.href = '/hotels.html?search=' + search;
+    });
+  </script>
+</body>
+
+</html>
